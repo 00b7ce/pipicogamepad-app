@@ -24,6 +24,37 @@ async function createWindow() {
     },
   });
 
+  win.webContents.session.on('select-hid-device', (event, details, callback) => {
+    event.preventDefault()
+    if (details.deviceList && details.deviceList.length > 0) {
+      callback(details.deviceList[0].deviceId)
+    }
+  })
+
+  win.webContents.session.on('hid-device-added', (event, device) => {    
+    console.log('hid-device-added FIRED WITH', device)
+  })
+
+  win.webContents.session.on('hid-device-removed', (event, device) => {    
+    console.log('hid-device-removed FIRED WITH', device)
+  })
+
+  win.webContents.session.setPermissionCheckHandler((webContents, permission, requestingOrigin, details) => {
+    if (permission === 'hid') {
+      return true
+    }
+    return false
+  });
+
+  win.webContents.session.setDevicePermissionHandler((details) => {
+    if (details.deviceType === 'hid') {
+      if (details.device.vendorId === 51966 && details.device.productId === 16392) {
+        return true
+      }
+    }
+    return false
+  })
+
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string);
@@ -58,7 +89,7 @@ app.on("ready", async () => {
     // Install Vue Devtools
     try {
       await installExtension(VUEJS3_DEVTOOLS);
-    } catch (e) {
+    } catch (e: any) {
       console.error("Vue Devtools failed to install:", e.toString());
     }
   }

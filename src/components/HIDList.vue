@@ -1,5 +1,10 @@
 <template>
     <div class="deviceList">{{ msg }}</div>
+    <ul>
+        <li v-for="device in devices" v-bind:key="device.productName">
+            {{ device }}
+        </li>
+    </ul>
 </template>
 
 <script lang="ts">
@@ -7,49 +12,27 @@ import { Options, Vue } from "vue-class-component";
 import { defineComponent } from "vue";
 
 export default defineComponent({
-    name: 'Test',
+    name: 'HIDList',
     data() {
         return {
-            msg: "test"
+            msg: "test",
+            devices: [] as Array<{productName:''}>
         }},
     created: function() {
-        console.log(this.methodTest());
+        this.getHIDDeviceList();
     },
     methods: {
         methodTest() {
             return "Hello TypeScript"
+        },
+        async getHIDDeviceList(){
+            const devices: any[] = await navigator.hid.getDevices();
+            devices.forEach(device => {
+                this.devices.push(device.productName);
+            });
         }
     },
 });
-
-// interface ComputexMessage {
-//     title: string,
-//     okMessage: string,
-//     cancelMessage: string
-// }
-
-// export default class HIDList extends Vue ({
-//     private testText!: string,
-//     data() {
-//         return {
-//             this.testText: "Hello TypeScript",
-//         }},
-// });
-
-// export default {
-//     name: 'ListHID',
-//     data() {
-//         return {
-//             todos: [
-//                 { text: 'Learn JavaScript' },
-//                 { text: 'Learn Vue' },
-//                 { text: 'Build something awesome' }
-//             ]
-//         }
-//     }
-// }
-// let grantedDeviceList: string;
-// getHIDDeviceList();
 
 // async function getHIDDeviceList() {
 //     const devices: any[] = await navigator.hid.getDevices();
