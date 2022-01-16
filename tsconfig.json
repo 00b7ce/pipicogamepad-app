@@ -14,7 +14,8 @@
     "baseUrl": ".",
     "types": [
       "webpack-env",
-      "jest"
+      "jest",
+      "w3c-web-hid"
     ],
     "paths": {
       "@/*": [
