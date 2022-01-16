@@ -20,40 +20,49 @@ async function createWindow() {
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
       nodeIntegration: process.env
         .ELECTRON_NODE_INTEGRATION as unknown as boolean,
-      contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+      contextIsolation: !(process.env
+        .ELECTRON_NODE_INTEGRATION as unknown) as boolean,
     },
   });
 
-  win.webContents.session.on('select-hid-device', (event, details, callback) => {
-    event.preventDefault()
-    if (details.deviceList && details.deviceList.length > 0) {
-      callback(details.deviceList[0].deviceId)
-    }
-  })
-
-  win.webContents.session.on('hid-device-added', (event, device) => {    
-    console.log('hid-device-added FIRED WITH', device)
-  })
-
-  win.webContents.session.on('hid-device-removed', (event, device) => {    
-    console.log('hid-device-removed FIRED WITH', device)
-  })
-
-  win.webContents.session.setPermissionCheckHandler((webContents, permission, requestingOrigin, details) => {
-    if (permission === 'hid') {
-      return true
-    }
-    return false
-  });
-
-  win.webContents.session.setDevicePermissionHandler((details) => {
-    if (details.deviceType === 'hid') {
-      if (details.device.vendorId === 51966 && details.device.productId === 16392) {
-        return true
+  win.webContents.session.on(
+    "select-hid-device",
+    (event, details, callback) => {
+      event.preventDefault();
+      if (details.deviceList && details.deviceList.length > 0) {
+        callback(details.deviceList[0].deviceId);
       }
     }
-    return false
-  })
+  );
+
+  win.webContents.session.on("hid-device-added", (event, device) => {
+    console.log("hid-device-added FIRED WITH", device);
+  });
+
+  win.webContents.session.on("hid-device-removed", (event, device) => {
+    console.log("hid-device-removed FIRED WITH", device);
+  });
+
+  win.webContents.session.setPermissionCheckHandler(
+    (webContents, permission, requestingOrigin, details) => {
+      if (permission === "hid") {
+        return true;
+      }
+      return false;
+    }
+  );
+
+  win.webContents.session.setDevicePermissionHandler((details) => {
+    if (details.deviceType === "hid") {
+      if (
+        details.device.vendorId === 51966 &&
+        details.device.productId === 16392
+      ) {
+        return true;
+      }
+    }
+    return false;
+  });
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode

@@ -12,8 +12,7 @@ import HIDList from "@/components/HIDList.vue";
 @Options({
   components: {
     HIDList,
-  }
+  },
 })
-
 export default class Test extends Vue {}
 </script>
