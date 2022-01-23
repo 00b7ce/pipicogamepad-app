@@ -2,18 +2,16 @@
 
   <div class="deviceList">{{ msg }}</div>
 
-  <div v-for="device in devices" v-bind:key="device.state">{{ device.productName }}</div>
-  <br/>
+  <!-- <div v-for="device in devices" v-bind:key="device.state">{{ device.productName }}</div> -->
+
   <div>input:<a v-for="(value, key) in report" :key="key">{{ value }}, </a></div>
   <div>setting:<a v-for="(value, key) in report2" :key="key">{{ value }}, </a></div>
-  <!-- <div v-for="(value, key) in report" :key="key">{{ value }},</div>
-  <div v-for="(value, key) in report2" :key="key">{{ value }},</div> -->
-  <br/>
-  <button v-on:click="getHIDDeviceList">Find Device</button><br />
-  <br/>
-  <button v-on:click="openDevice">Open Device</button><br />
-  <br/>
-  <button v-on:click="closeDeive">Close Device</button>
+
+  <!-- <button v-on:click="getHIDDeviceList">Find Device</button><br /> -->
+  <!-- <br/> -->
+  <!-- <button v-on:click="openDevice">Open Device</button><br /> -->
+  <!-- <br/> -->
+  <!-- <button v-on:click="closeDeive">Close Device</button> -->
 </template>
 
 <script lang="ts">
@@ -25,6 +23,7 @@ export default defineComponent({
 
   data() {
     return {
+      productName : "MKB Gamepad" as string,
       msg: "" as string,
       devices: [] as Array<any>,
       report:  [] as Array<any>,
@@ -33,11 +32,18 @@ export default defineComponent({
   },
   mounted() {
     this.getHIDDeviceList();
+    navigator.hid.addEventListener('connect', (device :any) => this.getHIDDeviceList());
+    navigator.hid.addEventListener('disconnect', (event :any) => this.disconnectClose(event));
   },
+
+  beforeUpdate() {
+    this.openDevice();
+  },
+
+  
 
   beforeUnmount() {
     this.devices.forEach(async (device) => {
-      navigator.hid.addEventListener("connect", ({device}) => this.getHIDDeviceList());
       if (device.opened) {
         device.removeEventListener("inputreport", (e: any) => this.receiveReport(e));
         await device.close();
@@ -48,23 +54,37 @@ export default defineComponent({
   methods: {
     async getHIDDeviceList() {
       this.devices.length = 0;
-      const devices: any[] = await navigator.hid.requestDevice({
-        filters: [{
-          vendorId: 0xcafe,
-          productId: 0x4008,
-        }]
-      });
+      const devices: any[] = await navigator.hid.getDevices();
       devices.forEach((device) => {
-        this.devices.push(device);
+        if(device.productName == this.productName) {
+          this.devices.push(device);
+        }
       });
+      if(this.devices.length == 2) {
+        this.msg = 'device found';
+      }
+    },
+
+    disconnectClose(event: any) {
+      console.log('device is disconnect');
+      if(event.device.productName == this.productName) {
+        event.device.removeEventListener("inputreport", (e: any) => this.receiveReport(e));
+        this.devices.length = 0;
+      }
     },
 
     async openDevice() {
+      if(this.devices.length == 0) return;
+
       this.devices.forEach(async (device) => {
-        await device.open();
-        device.addEventListener("inputreport", (e: any) => this.receiveReport(e));
+        if(!device.opened) {
+          await device.open();
+          device.addEventListener("inputreport", (e: any) => this.receiveReport(e));
+        }
       });
+
       this.msg = "Device opened.";
+
     },
 
     async closeDeive() {
@@ -72,7 +92,9 @@ export default defineComponent({
         device.removeEventListener("inputreport", (e: any) => this.receiveReport(e));
         await device.close();
       });
+
       this.msg = "Device closed.";
+
     },
 
     receiveReport(e: any) {
