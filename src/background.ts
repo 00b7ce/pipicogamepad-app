@@ -54,12 +54,12 @@ async function createWindow() {
 
   win.webContents.session.setDevicePermissionHandler((details) => {
     if (details.deviceType === "hid") {
-      if (
-        details.device.vendorId === 51966 &&
-        details.device.productId === 16392
-      ) {
+      // if (
+      //   details.device.vendorId === 51966 &&
+      //   details.device.productId === 16392
+      // ) {
         return true;
-      }
+      // }
     }
     return false;
   });
